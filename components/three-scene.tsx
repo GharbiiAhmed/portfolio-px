@@ -1,15 +1,20 @@
 "use client"
 
-import { useEffect, useRef } from "react"
+import { useEffect, useRef, useState } from "react"
 
 export function ThreeScene() {
   const mountRef = useRef<HTMLDivElement>(null)
   const sceneRef = useRef<any>(null)
   const rendererRef = useRef<any>(null)
   const frameRef = useRef<number>()
+  const [isMounted, setIsMounted] = useState(false)
 
   useEffect(() => {
-    if (typeof window === "undefined") return
+    setIsMounted(true)
+  }, [])
+
+  useEffect(() => {
+    if (typeof window === "undefined" || !isMounted) return
 
     // Simple 3D scene without Three.js dependency
     const canvas = document.createElement("canvas")
@@ -105,7 +110,12 @@ export function ThreeScene() {
         mountRef.current.removeChild(canvas)
       }
     }
-  }, [])
+  }, [isMounted])
+
+  // Don't render on server
+  if (!isMounted) {
+    return null
+  }
 
   return <div ref={mountRef} className="fixed inset-0 pointer-events-none" style={{ opacity: 0.3 }} />
 }

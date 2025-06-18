@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion"
 import { Code, Server, Cloud, Database, Zap, Cpu } from "lucide-react"
+import { useEffect, useState } from "react"
 
 const floatingIcons = [
   { Icon: Code, delay: 0 },
@@ -13,6 +14,32 @@ const floatingIcons = [
 ]
 
 export function FloatingElements() {
+  const [windowSize, setWindowSize] = useState({ width: 0, height: 0 })
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setWindowSize({
+        width: window.innerWidth,
+        height: window.innerHeight,
+      })
+
+      const handleResize = () => {
+        setWindowSize({
+          width: window.innerWidth,
+          height: window.innerHeight,
+        })
+      }
+
+      window.addEventListener("resize", handleResize)
+      return () => window.removeEventListener("resize", handleResize)
+    }
+  }, [])
+
+  // Don't render on server
+  if (typeof window === "undefined" || windowSize.width === 0) {
+    return null
+  }
+
   return (
     <div className="fixed inset-0 pointer-events-none z-10 overflow-hidden">
       {floatingIcons.map(({ Icon, delay }, index) => (
@@ -20,8 +47,8 @@ export function FloatingElements() {
           key={index}
           className="absolute text-purple-400/20"
           initial={{
-            x: Math.random() * window.innerWidth,
-            y: window.innerHeight + 100,
+            x: Math.random() * windowSize.width,
+            y: windowSize.height + 100,
             rotate: 0,
             scale: 0.5,
           }}

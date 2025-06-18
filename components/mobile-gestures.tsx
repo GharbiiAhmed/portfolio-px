@@ -1,9 +1,17 @@
 "use client"
 
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 
 export function MobileGestures() {
+  const [isMounted, setIsMounted] = useState(false)
+
   useEffect(() => {
+    setIsMounted(true)
+  }, [])
+
+  useEffect(() => {
+    if (typeof document === "undefined" || !isMounted) return
+
     let startY = 0
     let startX = 0
 
@@ -60,13 +68,15 @@ export function MobileGestures() {
       // Swipe left/right for theme toggle
       if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 100) {
         // Toggle theme
-        ;(window as any).playThemeSound?.()
+        if (typeof window !== "undefined") {
+          ;(window as any).playThemeSound?.()
+        }
       }
     }
 
     // Add haptic feedback
     const addHapticFeedback = () => {
-      if ("vibrate" in navigator) {
+      if (typeof navigator !== "undefined" && "vibrate" in navigator) {
         navigator.vibrate(50)
       }
     }
@@ -87,7 +97,7 @@ export function MobileGestures() {
       document.removeEventListener("touchend", handleTouchEnd)
       document.removeEventListener("touchmove", handleTouchMove)
     }
-  }, [])
+  }, [isMounted])
 
   return null
 }

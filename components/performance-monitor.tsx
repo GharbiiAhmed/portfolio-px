@@ -10,8 +10,15 @@ export function PerformanceMonitor() {
     loadTime: 0,
     memoryUsage: 0,
   })
+  const [isMounted, setIsMounted] = useState(false)
 
   useEffect(() => {
+    setIsMounted(true)
+  }, [])
+
+  useEffect(() => {
+    if (typeof window === "undefined" || typeof performance === "undefined" || !isMounted) return
+
     let frameCount = 0
     let lastTime = performance.now()
     const startTime = performance.now()
@@ -25,19 +32,27 @@ export function PerformanceMonitor() {
           ...prev,
           fps: Math.round((frameCount * 1000) / (currentTime - lastTime)),
           loadTime: Math.round(currentTime - startTime),
-          memoryUsage: (performance as any).memory
-            ? Math.round(((performance as any).memory.usedJSHeapSize / 1024 / 1024) * 100) / 100
-            : 0,
+          memoryUsage:
+            typeof performance !== "undefined" && (performance as any).memory
+              ? Math.round(((performance as any).memory.usedJSHeapSize / 1024 / 1024) * 100) / 100
+              : 0,
         }))
         frameCount = 0
         lastTime = currentTime
       }
 
-      requestAnimationFrame(updateMetrics)
+      if (typeof window !== "undefined") {
+        requestAnimationFrame(updateMetrics)
+      }
     }
 
     updateMetrics()
-  }, [])
+  }, [isMounted])
+
+  // Don't render on server
+  if (!isMounted) {
+    return null
+  }
 
   return (
     <motion.div

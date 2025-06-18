@@ -22,34 +22,53 @@ interface KeyboardShortcutsProps {
 
 export function KeyboardShortcuts({ theme = "dark" }: KeyboardShortcutsProps) {
   const [showShortcuts, setShowShortcuts] = useState(false)
+  const [isMounted, setIsMounted] = useState(false)
 
   useEffect(() => {
+    setIsMounted(true)
+  }, [])
+
+  useEffect(() => {
+    if (typeof window === "undefined" || !isMounted) return
+
     const handleKeyPress = (e: KeyboardEvent) => {
       if (e.ctrlKey || e.metaKey || !e.key) return
 
       switch (e.key.toLowerCase()) {
         case "h":
-          document.getElementById("hero")?.scrollIntoView({ behavior: "smooth" })
+          if (typeof document !== "undefined") {
+            document.getElementById("hero")?.scrollIntoView({ behavior: "smooth" })
+          }
           ;(window as any).playNavSound?.()
           break
         case "a":
-          document.getElementById("about")?.scrollIntoView({ behavior: "smooth" })
+          if (typeof document !== "undefined") {
+            document.getElementById("about")?.scrollIntoView({ behavior: "smooth" })
+          }
           ;(window as any).playNavSound?.()
           break
         case "s":
-          document.getElementById("skills")?.scrollIntoView({ behavior: "smooth" })
+          if (typeof document !== "undefined") {
+            document.getElementById("skills")?.scrollIntoView({ behavior: "smooth" })
+          }
           ;(window as any).playNavSound?.()
           break
         case "p":
-          document.getElementById("projects")?.scrollIntoView({ behavior: "smooth" })
+          if (typeof document !== "undefined") {
+            document.getElementById("projects")?.scrollIntoView({ behavior: "smooth" })
+          }
           ;(window as any).playNavSound?.()
           break
         case "e":
-          document.getElementById("experience")?.scrollIntoView({ behavior: "smooth" })
+          if (typeof document !== "undefined") {
+            document.getElementById("experience")?.scrollIntoView({ behavior: "smooth" })
+          }
           ;(window as any).playNavSound?.()
           break
         case "c":
-          document.getElementById("contact")?.scrollIntoView({ behavior: "smooth" })
+          if (typeof document !== "undefined") {
+            document.getElementById("contact")?.scrollIntoView({ behavior: "smooth" })
+          }
           ;(window as any).playNavSound?.()
           break
         case "t":
@@ -69,7 +88,12 @@ export function KeyboardShortcuts({ theme = "dark" }: KeyboardShortcutsProps) {
 
     window.addEventListener("keydown", handleKeyPress)
     return () => window.removeEventListener("keydown", handleKeyPress)
-  }, [])
+  }, [isMounted])
+
+  // Don't render on server
+  if (!isMounted) {
+    return null
+  }
 
   return (
     <>

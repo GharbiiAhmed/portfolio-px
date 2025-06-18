@@ -157,57 +157,84 @@ export default function Portfolio() {
   const [soundEnabled, setSoundEnabled] = useState(true)
   const [showCursor, setShowCursor] = useState(true)
   const [selectedProject, setSelectedProject] = useState<(typeof projects)[0] | null>(null)
+  const [isMounted, setIsMounted] = useState(false)
 
   useEffect(() => {
+    setIsMounted(true)
     setIsVisible(true)
+  }, [])
+
+  useEffect(() => {
+    if (!isMounted) return
 
     // Load theme from localStorage
-    const savedTheme = localStorage.getItem("theme") as "dark" | "light" | null
-    if (savedTheme) {
-      setTheme(savedTheme)
-    } else if (window.matchMedia("(prefers-color-scheme: light)").matches) {
-      setTheme("light")
+    if (typeof window !== "undefined") {
+      const savedTheme = localStorage.getItem("theme") as "dark" | "light" | null
+      if (savedTheme) {
+        setTheme(savedTheme)
+      } else if (window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches) {
+        setTheme("light")
+      }
     }
 
     const handleScroll = () => {
+      if (typeof window === "undefined") return
+
       const sections = ["hero", "about", "skills", "projects", "experience", "certifications", "contact"]
       const scrollPosition = window.scrollY + 100
 
       for (const section of sections) {
-        const element = document.getElementById(section)
-        if (element) {
-          const { offsetTop, offsetHeight } = element
-          if (scrollPosition >= offsetTop && scrollPosition < offsetTop + offsetHeight) {
-            setActiveSection(section)
-            break
+        if (typeof document !== "undefined") {
+          const element = document.getElementById(section)
+          if (element) {
+            const { offsetTop, offsetHeight } = element
+            if (scrollPosition >= offsetTop && scrollPosition < offsetTop + offsetHeight) {
+              setActiveSection(section)
+              break
+            }
           }
         }
       }
     }
 
-    window.addEventListener("scroll", handleScroll)
-    return () => window.removeEventListener("scroll", handleScroll)
-  }, [])
+    if (typeof window !== "undefined") {
+      window.addEventListener("scroll", handleScroll)
+    }
+
+    return () => {
+      if (typeof window !== "undefined") {
+        window.removeEventListener("scroll", handleScroll)
+      }
+    }
+  }, [isMounted])
 
   const toggleTheme = () => {
     const newTheme = theme === "dark" ? "light" : "dark"
     setTheme(newTheme)
-    localStorage.setItem("theme", newTheme)
+    if (typeof window !== "undefined") {
+      localStorage.setItem("theme", newTheme)
+    }
   }
 
   const scrollToSection = (sectionId: string) => {
-    document.getElementById(sectionId)?.scrollIntoView({ behavior: "smooth" })
+    if (typeof document !== "undefined") {
+      document.getElementById(sectionId)?.scrollIntoView({ behavior: "smooth" })
+    }
   }
 
   // Download CV function
   const downloadCV = () => {
-    const link = document.createElement("a")
-    link.href = "/Ahmed_Gharbi_Resume.pdf"
-    link.download = "Ahmed_Gharbi_Resume.pdf"
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-    ;(window as any).playSuccessSound?.()
+    if (typeof document !== "undefined") {
+      const link = document.createElement("a")
+      link.href = "/Ahmed_Gharbi_Resume.pdf"
+      link.download = "Ahmed_Gharbi_Resume.pdf"
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      if (typeof window !== "undefined") {
+        ;(window as any).playSuccessSound?.()
+      }
+    }
   }
 
   // Theme-aware styles
@@ -237,6 +264,11 @@ export default function Portfolio() {
   }
 
   const currentTheme = themeStyles[theme]
+
+  // Don't render until mounted to prevent hydration mismatch
+  if (!isMounted) {
+    return null
+  }
 
   return (
     <ThemeContext.Provider value={{ theme, toggleTheme }}>
@@ -272,10 +304,16 @@ export default function Portfolio() {
                     <motion.button
                       key={item}
                       onClick={() => {
-                        ;(window as any).playNavSound?.()
+                        if (typeof window !== "undefined") {
+                          ;(window as any).playNavSound?.()
+                        }
                         scrollToSection(item.toLowerCase())
                       }}
-                      onMouseEnter={() => (window as any).playHoverSound?.()}
+                      onMouseEnter={() => {
+                        if (typeof window !== "undefined") {
+                          ;(window as any).playHoverSound?.()
+                        }
+                      }}
                       className={`${currentTheme.textSecondary} hover:${currentTheme.text} transition-colors ${
                         activeSection === item.toLowerCase() ? currentTheme.accent : ""
                       }`}
@@ -289,28 +327,40 @@ export default function Portfolio() {
                 <button
                   onClick={() => {
                     setSoundEnabled(!soundEnabled)
-                    ;(window as any).playThemeSound?.()
+                    if (typeof window !== "undefined") {
+                      ;(window as any).playThemeSound?.()
+                    }
                   }}
                   className={`px-3 py-2 rounded-lg transition-all duration-300 ${
                     theme === "dark"
                       ? "text-white/80 hover:text-white bg-white/10 hover:bg-white/20 border border-white/20"
                       : "text-gray-700 hover:text-gray-900 bg-gray-100 hover:bg-gray-200 border border-gray-300"
                   }`}
-                  onMouseEnter={() => (window as any).playHoverSound?.()}
+                  onMouseEnter={() => {
+                    if (typeof window !== "undefined") {
+                      ;(window as any).playHoverSound?.()
+                    }
+                  }}
                 >
                   {soundEnabled ? "🔊" : "🔇"}
                 </button>
                 <button
                   onClick={() => {
                     toggleTheme()
-                    ;(window as any).playThemeSound?.()
+                    if (typeof window !== "undefined") {
+                      ;(window as any).playThemeSound?.()
+                    }
                   }}
                   className={`px-3 py-2 rounded-lg transition-all duration-300 font-medium ${
                     theme === "dark"
                       ? "text-white/80 hover:text-white bg-white/10 hover:bg-white/20 border border-white/20"
                       : "text-gray-700 hover:text-gray-900 bg-gray-100 hover:bg-gray-200 border border-gray-300"
                   }`}
-                  onMouseEnter={() => (window as any).playHoverSound?.()}
+                  onMouseEnter={() => {
+                    if (typeof window !== "undefined") {
+                      ;(window as any).playHoverSound?.()
+                    }
+                  }}
                 >
                   {theme === "dark" ? "☀️ Light" : "🌙 Dark"}
                 </button>
@@ -386,10 +436,16 @@ export default function Portfolio() {
                   theme === "dark" ? "bg-purple-600 hover:bg-purple-700" : "bg-purple-600 hover:bg-purple-700"
                 } text-white transition-all duration-300`}
                 onClick={() => {
-                  ;(window as any).playClickSound?.()
+                  if (typeof window !== "undefined") {
+                    ;(window as any).playClickSound?.()
+                  }
                   scrollToSection("projects")
                 }}
-                onMouseEnter={() => (window as any).playHoverSound?.()}
+                onMouseEnter={() => {
+                  if (typeof window !== "undefined") {
+                    ;(window as any).playHoverSound?.()
+                  }
+                }}
               >
                 View My Work
               </Button>
@@ -401,9 +457,15 @@ export default function Portfolio() {
                     ? "border-white/50 text-white hover:bg-white hover:text-black bg-white/10 backdrop-blur-sm"
                     : "border-gray-900/50 text-gray-900 hover:bg-gray-900 hover:text-white bg-white/80 backdrop-blur-sm"
                 } transition-all duration-300 font-semibold`}
-                onMouseEnter={() => (window as any).playHoverSound?.()}
+                onMouseEnter={() => {
+                  if (typeof window !== "undefined") {
+                    ;(window as any).playHoverSound?.()
+                  }
+                }}
                 onClick={() => {
-                  ;(window as any).playClickSound?.()
+                  if (typeof window !== "undefined") {
+                    ;(window as any).playClickSound?.()
+                  }
                   downloadCV()
                 }}
               >
@@ -418,8 +480,16 @@ export default function Portfolio() {
                 className={`${currentTheme.textSecondary} hover:${currentTheme.text} transition-colors duration-300`}
                 whileHover={{ scale: 1.2 }}
                 whileTap={{ scale: 0.9 }}
-                onMouseEnter={() => (window as any).playHoverSound?.()}
-                onClick={() => (window as any).playClickSound?.()}
+                onMouseEnter={() => {
+                  if (typeof window !== "undefined") {
+                    ;(window as any).playHoverSound?.()
+                  }
+                }}
+                onClick={() => {
+                  if (typeof window !== "undefined") {
+                    ;(window as any).playClickSound?.()
+                  }
+                }}
               >
                 <Mail className="w-6 h-6" />
               </motion.a>
@@ -430,8 +500,16 @@ export default function Portfolio() {
                 className={`${currentTheme.textSecondary} hover:${currentTheme.text} transition-colors duration-300`}
                 whileHover={{ scale: 1.2 }}
                 whileTap={{ scale: 0.9 }}
-                onMouseEnter={() => (window as any).playHoverSound?.()}
-                onClick={() => (window as any).playClickSound?.()}
+                onMouseEnter={() => {
+                  if (typeof window !== "undefined") {
+                    ;(window as any).playHoverSound?.()
+                  }
+                }}
+                onClick={() => {
+                  if (typeof window !== "undefined") {
+                    ;(window as any).playClickSound?.()
+                  }
+                }}
               >
                 <Github className="w-6 h-6" />
               </motion.a>
@@ -442,8 +520,16 @@ export default function Portfolio() {
                 className={`${currentTheme.textSecondary} hover:${currentTheme.text} transition-colors duration-300`}
                 whileHover={{ scale: 1.2 }}
                 whileTap={{ scale: 0.9 }}
-                onMouseEnter={() => (window as any).playHoverSound?.()}
-                onClick={() => (window as any).playClickSound?.()}
+                onMouseEnter={() => {
+                  if (typeof window !== "undefined") {
+                    ;(window as any).playHoverSound?.()
+                  }
+                }}
+                onClick={() => {
+                  if (typeof window !== "undefined") {
+                    ;(window as any).playClickSound?.()
+                  }
+                }}
               >
                 <Linkedin className="w-6 h-6" />
               </motion.a>
@@ -528,7 +614,11 @@ export default function Portfolio() {
                   <a
                     href="mailto:aghx01@gmail.com"
                     className="hover:text-purple-400 transition-colors"
-                    onClick={() => (window as any).playClickSound?.()}
+                    onClick={() => {
+                      if (typeof window !== "undefined") {
+                        ;(window as any).playClickSound?.()
+                      }
+                    }}
                   >
                     aghx01@gmail.com
                   </a>
@@ -540,7 +630,11 @@ export default function Portfolio() {
                   <a
                     href="tel:+4915510553324"
                     className="hover:text-purple-400 transition-colors"
-                    onClick={() => (window as any).playClickSound?.()}
+                    onClick={() => {
+                      if (typeof window !== "undefined") {
+                        ;(window as any).playClickSound?.()
+                      }
+                    }}
                   >
                     +49 15510 553324
                   </a>
@@ -598,7 +692,11 @@ export default function Portfolio() {
                     theme === "dark" ? "hover:border-purple-500/50" : "hover:border-purple-400/50"
                   } transition-all duration-300 shadow-lg`}
                   whileHover={{ scale: 1.02, y: -5 }}
-                  onMouseEnter={() => (window as any).playCardHover?.()}
+                  onMouseEnter={() => {
+                    if (typeof window !== "undefined") {
+                      ;(window as any).playCardHover?.()
+                    }
+                  }}
                 >
                   <div className="flex items-center mb-4">
                     <div
@@ -684,9 +782,15 @@ export default function Portfolio() {
                   variants={fadeInUp}
                   whileHover={{ scale: 1.02, y: -10 }}
                   className="group cursor-pointer"
-                  onMouseEnter={() => (window as any).playCardHover?.()}
+                  onMouseEnter={() => {
+                    if (typeof window !== "undefined") {
+                      ;(window as any).playCardHover?.()
+                    }
+                  }}
                   onClick={() => {
-                    ;(window as any).playClickSound?.()
+                    if (typeof window !== "undefined") {
+                      ;(window as any).playClickSound?.()
+                    }
                     setSelectedProject(project)
                   }}
                 >
@@ -868,10 +972,16 @@ export default function Portfolio() {
                     theme === "dark" ? "hover:border-purple-500/50" : "hover:border-purple-400/50"
                   } transition-all duration-300 text-center shadow-lg cursor-pointer`}
                   onClick={() => {
-                    window.open(cert.url, "_blank")
-                    ;(window as any).playClickSound?.()
+                    if (typeof window !== "undefined") {
+                      window.open(cert.url, "_blank")
+                      ;(window as any).playClickSound?.()
+                    }
                   }}
-                  onMouseEnter={() => (window as any).playCardHover?.()}
+                  onMouseEnter={() => {
+                    if (typeof window !== "undefined") {
+                      ;(window as any).playCardHover?.()
+                    }
+                  }}
                 >
                   <div
                     className={`w-16 h-16 ${
@@ -954,7 +1064,11 @@ export default function Portfolio() {
                     <a
                       href="mailto:aghx01@gmail.com"
                       className={`${currentTheme.textSecondary} hover:text-purple-400 transition-colors duration-300`}
-                      onClick={() => (window as any).playClickSound?.()}
+                      onClick={() => {
+                        if (typeof window !== "undefined") {
+                          ;(window as any).playClickSound?.()
+                        }
+                      }}
                     >
                       aghx01@gmail.com
                     </a>
@@ -976,7 +1090,11 @@ export default function Portfolio() {
                     <a
                       href="tel:+4915510553324"
                       className={`${currentTheme.textSecondary} hover:text-purple-400 transition-colors duration-300`}
-                      onClick={() => (window as any).playClickSound?.()}
+                      onClick={() => {
+                        if (typeof window !== "undefined") {
+                          ;(window as any).playClickSound?.()
+                        }
+                      }}
                     >
                       +49 15510 553324
                     </a>
@@ -987,7 +1105,7 @@ export default function Portfolio() {
                   <div
                     className={`w-12 h-12 ${
                       theme === "dark"
-                        ? "bg-gradient-to-r from-purple-500 to-blue-600"
+                        ? "bg-gradient-to-r from-purple-500 to-blue-500"
                         : "bg-gradient-to-r from-purple-600 to-blue-600"
                     } rounded-lg flex items-center justify-center transition-all duration-500`}
                   >
@@ -1009,8 +1127,16 @@ export default function Portfolio() {
                     className={`${currentTheme.textSecondary} hover:${currentTheme.text} transition-colors duration-300`}
                     whileHover={{ scale: 1.2, rotate: 5 }}
                     whileTap={{ scale: 0.9 }}
-                    onMouseEnter={() => (window as any).playHoverSound?.()}
-                    onClick={() => (window as any).playClickSound?.()}
+                    onMouseEnter={() => {
+                      if (typeof window !== "undefined") {
+                        ;(window as any).playHoverSound?.()
+                      }
+                    }}
+                    onClick={() => {
+                      if (typeof window !== "undefined") {
+                        ;(window as any).playClickSound?.()
+                      }
+                    }}
                   >
                     <Github className="w-8 h-8" />
                   </motion.a>
@@ -1021,8 +1147,16 @@ export default function Portfolio() {
                     className={`${currentTheme.textSecondary} hover:${currentTheme.text} transition-colors duration-300`}
                     whileHover={{ scale: 1.2, rotate: -5 }}
                     whileTap={{ scale: 0.9 }}
-                    onMouseEnter={() => (window as any).playHoverSound?.()}
-                    onClick={() => (window as any).playClickSound?.()}
+                    onMouseEnter={() => {
+                      if (typeof window !== "undefined") {
+                        ;(window as any).playHoverSound?.()
+                      }
+                    }}
+                    onClick={() => {
+                      if (typeof window !== "undefined") {
+                        ;(window as any).playClickSound?.()
+                      }
+                    }}
                   >
                     <Linkedin className="w-8 h-8" />
                   </motion.a>

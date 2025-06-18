@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useRef } from "react"
+import { useEffect, useRef, useState } from "react"
 
 interface SoundManagerProps {
   enabled: boolean
@@ -8,9 +8,14 @@ interface SoundManagerProps {
 
 export function SoundManager({ enabled }: SoundManagerProps) {
   const audioContextRef = useRef<AudioContext | null>(null)
+  const [isMounted, setIsMounted] = useState(false)
 
   useEffect(() => {
-    if (!enabled) return
+    setIsMounted(true)
+  }, [])
+
+  useEffect(() => {
+    if (!enabled || typeof window === "undefined" || !isMounted) return
 
     // Initialize Web Audio API
     const initAudio = async () => {
@@ -35,10 +40,10 @@ export function SoundManager({ enabled }: SoundManagerProps) {
         audioContextRef.current.close()
       }
     }
-  }, [enabled])
+  }, [enabled, isMounted])
 
   const playSound = (frequency: number, duration: number, type: OscillatorType = "sine", volume = 0.1) => {
-    if (!enabled || !audioContextRef.current || audioContextRef.current.state === "closed") return
+    if (!enabled || !audioContextRef.current || audioContextRef.current.state === "closed" || !isMounted) return
 
     try {
       const oscillator = audioContextRef.current.createOscillator()
@@ -63,7 +68,7 @@ export function SoundManager({ enabled }: SoundManagerProps) {
 
   // Expose sound functions globally
   useEffect(() => {
-    if (enabled) {
+    if (enabled && typeof window !== "undefined" && isMounted) {
       // Hover sound
       ;(window as any).playHoverSound = () => {
         playSound(800, 0.1, "sine", 0.05)
@@ -95,7 +100,7 @@ export function SoundManager({ enabled }: SoundManagerProps) {
       ;(window as any).playCardHover = () => {
         playSound(660, 0.06, "sine", 0.02)
       }
-    } else {
+    } else if (typeof window !== "undefined") {
       // Clear sound functions when disabled
       ;(window as any).playHoverSound = () => {}
       ;(window as any).playClickSound = () => {}
@@ -104,7 +109,7 @@ export function SoundManager({ enabled }: SoundManagerProps) {
       ;(window as any).playNavSound = () => {}
       ;(window as any).playCardHover = () => {}
     }
-  }, [enabled])
+  }, [enabled, isMounted])
 
   return null
 }

@@ -7,8 +7,15 @@ export function AdvancedCursor() {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
   const [isHovering, setIsHovering] = useState(false)
   const [isClicking, setIsClicking] = useState(false)
+  const [isMounted, setIsMounted] = useState(false)
 
   useEffect(() => {
+    setIsMounted(true)
+  }, [])
+
+  useEffect(() => {
+    if (typeof window === "undefined" || !isMounted) return
+
     const updateMousePosition = (e: MouseEvent) => {
       setMousePosition({ x: e.clientX, y: e.clientY })
     }
@@ -47,17 +54,27 @@ export function AdvancedCursor() {
     window.addEventListener("mousemove", updateMousePosition)
     window.addEventListener("mousedown", handleMouseDown)
     window.addEventListener("mouseup", handleMouseUp)
-    document.addEventListener("mouseover", handleMouseOver, true)
-    document.addEventListener("mouseout", handleMouseOut, true)
+
+    if (typeof document !== "undefined") {
+      document.addEventListener("mouseover", handleMouseOver, true)
+      document.addEventListener("mouseout", handleMouseOut, true)
+    }
 
     return () => {
       window.removeEventListener("mousemove", updateMousePosition)
       window.removeEventListener("mousedown", handleMouseDown)
       window.removeEventListener("mouseup", handleMouseUp)
-      document.removeEventListener("mouseover", handleMouseOver, true)
-      document.removeEventListener("mouseout", handleMouseOut, true)
+      if (typeof document !== "undefined") {
+        document.removeEventListener("mouseover", handleMouseOver, true)
+        document.removeEventListener("mouseout", handleMouseOut, true)
+      }
     }
-  }, [])
+  }, [isMounted])
+
+  // Don't render on server
+  if (!isMounted) {
+    return null
+  }
 
   return (
     <>

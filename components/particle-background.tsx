@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useRef } from "react"
+import { useEffect, useRef, useState } from "react"
 
 interface Particle {
   x: number
@@ -21,8 +21,15 @@ export function ParticleBackground({ theme, particleCount = 50 }: ParticleBackgr
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const particlesRef = useRef<Particle[]>([])
   const animationRef = useRef<number>()
+  const [isMounted, setIsMounted] = useState(false)
 
   useEffect(() => {
+    setIsMounted(true)
+  }, [])
+
+  useEffect(() => {
+    if (!isMounted) return
+
     const canvas = canvasRef.current
     if (!canvas) return
 
@@ -30,8 +37,10 @@ export function ParticleBackground({ theme, particleCount = 50 }: ParticleBackgr
     if (!ctx) return
 
     const resizeCanvas = () => {
-      canvas.width = window.innerWidth
-      canvas.height = window.innerHeight
+      if (typeof window !== "undefined") {
+        canvas.width = window.innerWidth
+        canvas.height = window.innerHeight
+      }
     }
 
     const createParticles = () => {
@@ -98,18 +107,27 @@ export function ParticleBackground({ theme, particleCount = 50 }: ParticleBackgr
     createParticles()
     animate()
 
-    window.addEventListener("resize", () => {
-      resizeCanvas()
-      createParticles()
-    })
+    if (typeof window !== "undefined") {
+      window.addEventListener("resize", () => {
+        resizeCanvas()
+        createParticles()
+      })
+    }
 
     return () => {
       if (animationRef.current) {
         cancelAnimationFrame(animationRef.current)
       }
-      window.removeEventListener("resize", resizeCanvas)
+      if (typeof window !== "undefined") {
+        window.removeEventListener("resize", resizeCanvas)
+      }
     }
-  }, [theme, particleCount])
+  }, [theme, particleCount, isMounted])
+
+  // Don't render on server
+  if (!isMounted) {
+    return null
+  }
 
   return <canvas ref={canvasRef} className="fixed inset-0 pointer-events-none z-0" style={{ opacity: 0.3 }} />
 }
