@@ -2,8 +2,7 @@
 
 import { useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { X, Github, ExternalLink, Calendar, Users, Code } from "lucide-react"
-import { Button } from "@/components/ui/button"
+import { X, Calendar, Users, Code } from "lucide-react"
 
 interface ProjectModalProps {
   project: {
@@ -156,30 +155,6 @@ export function ProjectModal({ project, isOpen, onClose }: ProjectModalProps) {
                     </li>
                   ))}
                 </ul>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="flex space-x-4">
-                {project.githubUrl && (
-                  <Button
-                    className="bg-gray-800 hover:bg-gray-700 text-white"
-                    onMouseEnter={() => (window as any).playHoverSound?.()}
-                    onClick={() => (window as any).playClickSound?.()}
-                  >
-                    <Github className="w-4 h-4 mr-2" />
-                    View Code
-                  </Button>
-                )}
-                {project.liveUrl && (
-                  <Button
-                    className="bg-purple-600 hover:bg-purple-700 text-white"
-                    onMouseEnter={() => (window as any).playHoverSound?.()}
-                    onClick={() => (window as any).playClickSound?.()}
-                  >
-                    <ExternalLink className="w-4 h-4 mr-2" />
-                    Live Demo
-                  </Button>
-                )}
               </div>
             </div>
           </motion.div>

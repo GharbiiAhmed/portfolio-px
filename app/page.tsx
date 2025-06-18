@@ -66,6 +66,7 @@ const projects = [
     duration: "6 months",
     teamSize: 5,
     myRole: "Full-Stack Lead Developer",
+    images: ["/project-lms-dashboard.png"],
     githubUrl: "https://github.com/GharbiiAhmed",
     liveUrl: "https://demo.com",
   },
@@ -79,6 +80,7 @@ const projects = [
     duration: "4 months",
     teamSize: 3,
     myRole: "Mobile Developer",
+    images: ["/project-flight-mobile.png"],
     githubUrl: "https://github.com/GharbiiAhmed",
     liveUrl: "https://demo.com",
   },
@@ -92,6 +94,7 @@ const projects = [
     duration: "8 months",
     teamSize: 8,
     myRole: "DevOps Engineer & Backend Developer",
+    images: ["/project-kubernetes-cluster.png"],
     githubUrl: "https://github.com/GharbiiAhmed",
   },
   {
@@ -104,6 +107,7 @@ const projects = [
     duration: "3 months",
     teamSize: 2,
     myRole: "DevOps Specialist",
+    images: ["/project-monitoring-dashboard.png"],
     githubUrl: "https://github.com/GharbiiAhmed",
     liveUrl: "https://demo.com",
   },
@@ -384,14 +388,8 @@ export default function Portfolio() {
               transition={{ duration: 0.8, delay: 0.2 }}
               className="mb-8"
             >
-              <div
-                className={`w-32 h-32 mx-auto ${
-                  theme === "dark"
-                    ? "bg-gradient-to-r from-purple-500 to-blue-500"
-                    : "bg-gradient-to-r from-purple-600 to-blue-600"
-                } rounded-full flex items-center justify-center text-4xl font-bold text-white transition-all duration-500`}
-              >
-                AG
+              <div className="w-32 h-32 mx-auto rounded-full overflow-hidden border-4 border-white/20 shadow-lg">
+                <img src="/ahmed-profile-hero.jpg" alt="Ahmed Gharbi" className="w-full h-full object-cover" />
               </div>
             </motion.div>
 
@@ -800,6 +798,14 @@ export default function Portfolio() {
                     } transition-all duration-300 h-full shadow-lg`}
                   >
                     <CardContent className="p-6">
+                      {/* Add project image */}
+                      <div className="mb-4 rounded-lg overflow-hidden">
+                        <img
+                          src={project.images?.[0] || "/placeholder.svg?height=200&width=400"}
+                          alt={project.title}
+                          className="w-full h-48 object-cover hover:scale-105 transition-transform duration-300"
+                        />
+                      </div>
                       <div className="flex items-center justify-between mb-4">
                         <h3
                           className={`text-xl font-bold ${currentTheme.text} ${
